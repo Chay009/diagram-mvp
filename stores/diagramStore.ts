@@ -39,7 +39,16 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
     Alice->>Bob: Hello Bob, how are you?
     Bob-->>Alice: Great!`,
   erInput: '',
-  cloudInput: '',
+  cloudInput: `# AWS Architecture Example
+group "VPC" {
+  web: aws-ec2 "Web Server"
+  api: aws-lambda "API"
+}
+
+cdn: aws-cloudfront "CDN"
+
+cdn -> web "Route"
+web -> api "HTTP"`,
   sequenceError: null,
   erError: null,
   cloudError: null,
