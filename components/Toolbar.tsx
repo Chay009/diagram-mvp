@@ -1,25 +1,47 @@
 'use client';
 
-import { useHistoryStore, useThemeStore } from '@/stores';
+import { useDiagramStore, useHistoryStore, useThemeStore } from '@/stores';
 import { Undo2, Redo2, Palette } from 'lucide-react';
 
 export function Toolbar() {
   const { canUndo, canRedo, undo, redo } = useHistoryStore();
   const { mode, setThemeMode } = useThemeStore();
+  const {
+    setSequenceInput,
+    setErInput,
+    setCloudInput,
+    setDiagramType,
+  } = useDiagramStore();
+
+  const restoreHistoryEntry = (entry: { diagramType: string; input: string }) => {
+    // Switch to the correct diagram type
+    setDiagramType(entry.diagramType as 'sequence' | 'er' | 'cloud');
+
+    // Restore the input for that diagram type
+    switch (entry.diagramType) {
+      case 'sequence':
+        setSequenceInput(entry.input);
+        break;
+      case 'er':
+        setErInput(entry.input);
+        break;
+      case 'cloud':
+        setCloudInput(entry.input);
+        break;
+    }
+  };
 
   const handleUndo = () => {
     const entry = undo();
     if (entry) {
-      // Will implement history restoration in later step
-      console.log('Undo:', entry);
+      restoreHistoryEntry(entry);
     }
   };
 
   const handleRedo = () => {
     const entry = redo();
     if (entry) {
-      // Will implement history restoration in later step
-      console.log('Redo:', entry);
+      restoreHistoryEntry(entry);
     }
   };
 

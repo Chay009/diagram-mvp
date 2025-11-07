@@ -1,18 +1,39 @@
 'use client';
 
-import { useDiagramStore } from '@/stores';
+import { useDiagramStore, useHistoryStore } from '@/stores';
 import { useEffect, useRef } from 'react';
 import { beautifySequenceDiagram, prettifyMermaid, beautifyCloudSyntax } from '@/lib/utils';
 import { Wand2 } from 'lucide-react';
 
 export function CodeEditor() {
   const { getCurrentInput, setCurrentInput, currentDiagramType } = useDiagramStore();
+  const { pushHistory } = useHistoryStore();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const historyTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSavedInputRef = useRef<string>('');
 
   const input = getCurrentInput();
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setCurrentInput(e.target.value);
+    const newValue = e.target.value;
+    setCurrentInput(newValue);
+
+    // Debounce history saves - only save after 1 second of no typing
+    if (historyTimerRef.current) {
+      clearTimeout(historyTimerRef.current);
+    }
+
+    historyTimerRef.current = setTimeout(() => {
+      // Only save if the input actually changed
+      if (newValue !== lastSavedInputRef.current) {
+        pushHistory({
+          diagramType: currentDiagramType,
+          input: newValue,
+          timestamp: Date.now(),
+        });
+        lastSavedInputRef.current = newValue;
+      }
+    }, 1000);
   };
 
   useEffect(() => {
