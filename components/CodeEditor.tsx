@@ -2,7 +2,7 @@
 
 import { useDiagramStore } from '@/stores';
 import { useEffect, useRef } from 'react';
-import { beautifySequenceDiagram, prettifyMermaid } from '@/lib/utils';
+import { beautifySequenceDiagram, prettifyMermaid, beautifyCloudSyntax } from '@/lib/utils';
 import { Wand2 } from 'lucide-react';
 
 export function CodeEditor() {
@@ -49,8 +49,7 @@ export function CodeEditor() {
         beautified = input;
         break;
       case 'cloud':
-        // Cloud beautification will be added later
-        beautified = input;
+        beautified = beautifyCloudSyntax(input);
         break;
       default:
         beautified = prettifyMermaid(input);
