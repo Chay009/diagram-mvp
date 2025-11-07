@@ -1,13 +1,16 @@
 'use client';
 
+import { useRef } from 'react';
 import { useDiagramStore, useThemeStore } from '@/stores';
 import { SequenceDiagram } from './diagrams/SequenceDiagram';
 import { ERDiagram } from './diagrams/ERDiagram';
 import { CloudDiagram } from './diagrams/CloudDiagram';
+import { ExportButton } from './ExportButton';
 
 export function DiagramPreview() {
   const { currentDiagramType, sequenceError, erError, cloudError } = useDiagramStore();
   const { mode } = useThemeStore();
+  const diagramContainerRef = useRef<HTMLDivElement>(null);
 
   const renderDiagram = () => {
     switch (currentDiagramType) {
@@ -45,9 +48,7 @@ export function DiagramPreview() {
           <span className="px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded">
             {mode === 'brand' ? 'Brand Theme' : 'Default Theme'}
           </span>
-          <button className="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50">
-            Export
-          </button>
+          <ExportButton containerRef={diagramContainerRef} />
         </div>
       </div>
 
@@ -62,7 +63,7 @@ export function DiagramPreview() {
       )}
 
       {/* Diagram Rendering Area */}
-      <div className="flex-1 overflow-auto bg-white">
+      <div ref={diagramContainerRef} className="flex-1 overflow-auto bg-white">
         {renderDiagram()}
       </div>
     </div>
