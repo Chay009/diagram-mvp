@@ -2,6 +2,8 @@
 
 import { useDiagramStore } from '@/stores';
 import { useEffect, useRef } from 'react';
+import { beautifySequenceDiagram, prettifyMermaid } from '@/lib/utils';
+import { Wand2 } from 'lucide-react';
 
 export function CodeEditor() {
   const { getCurrentInput, setCurrentInput, currentDiagramType } = useDiagramStore();
@@ -33,11 +35,43 @@ export function CodeEditor() {
     }
   };
 
+  const handleBeautify = () => {
+    if (!input.trim()) return;
+
+    let beautified = input;
+
+    switch (currentDiagramType) {
+      case 'sequence':
+        beautified = beautifySequenceDiagram(input);
+        break;
+      case 'er':
+        // ER beautification will be added later
+        beautified = input;
+        break;
+      case 'cloud':
+        // Cloud beautification will be added later
+        beautified = input;
+        break;
+      default:
+        beautified = prettifyMermaid(input);
+    }
+
+    setCurrentInput(beautified);
+  };
+
   return (
     <div className="h-full flex flex-col bg-gray-50">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
         <h2 className="text-sm font-semibold text-gray-700">Input</h2>
         <div className="flex gap-2">
+          <button
+            className="flex items-center gap-1 px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleBeautify}
+            disabled={!input.trim()}
+          >
+            <Wand2 size={14} />
+            Beautify
+          </button>
           <button
             className="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50"
             onClick={() => setCurrentInput('')}
