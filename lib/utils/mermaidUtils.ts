@@ -76,10 +76,9 @@ export function prettifyMermaid(code: string): string {
   try {
     const lines = code.split('\n');
     const formatted: string[] = [];
-    let indentLevel = 0;
     const indentSize = 4;
 
-    for (let line of lines) {
+    for (const line of lines) {
       const trimmed = line.trim();
 
       // Skip empty lines and comments
@@ -113,8 +112,7 @@ export function prettifyMermaid(code: string): string {
       }
 
       // Default: add with current indent
-      const indent = ' '.repeat(indentLevel * indentSize);
-      formatted.push(indent + trimmed);
+      formatted.push(trimmed);
     }
 
     // Add spacing after diagram type

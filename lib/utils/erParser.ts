@@ -168,7 +168,7 @@ function parseSQLColumn(line: string): Column | null {
       isPrimaryKey,
       isForeignKey: false,
     };
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -199,6 +199,7 @@ export function parseJSONSchema(json: string): ERSchema {
 /**
  * Parse array of tables from JSON
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseTablesArray(data: any[]): ERSchema {
   const tables: Table[] = [];
   const relationships: Relationship[] = [];

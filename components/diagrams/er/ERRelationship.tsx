@@ -1,10 +1,11 @@
 'use client';
 
 import { useThemeStore } from '@/stores';
-import type { Relationship } from '@/lib/utils/erParser';
+import type { DBRelationship } from '@/lib/utils/chartdb-wrapper';
+import { determineRelationshipType } from '@/lib/utils/chartdb-wrapper';
 
 interface ERRelationshipProps {
-  relationship: Relationship;
+  relationship: DBRelationship;
   fromPos: { x: number; y: number };
   toPos: { x: number; y: number };
 }
@@ -17,8 +18,12 @@ export function ERRelationship({ relationship, fromPos, toPos }: ERRelationshipP
   const midX = (fromPos.x + toPos.x) / 2;
   const midY = (fromPos.y + toPos.y) / 2;
 
-  // Create SVG path
-  const path = `M ${fromPos.x} ${fromPos.y} L ${toPos.x} ${toPos.y}`;
+  // Get relationship type from ChartDB's cardinality system
+  const relationshipType = determineRelationshipType({
+    sourceCardinality: relationship.sourceCardinality,
+    targetCardinality: relationship.targetCardinality,
+  });
+  const typeLabel = relationshipType.replace(/_/g, '-');
 
   return (
     <g>
@@ -30,7 +35,7 @@ export function ERRelationship({ relationship, fromPos, toPos }: ERRelationshipP
         y2={toPos.y}
         stroke={colors.secondary}
         strokeWidth={2}
-        strokeDasharray={relationship.type === 'one-to-one' ? '5,5' : 'none'}
+        strokeDasharray={relationshipType === 'one_to_one' ? '5,5' : 'none'}
       />
 
       {/* Arrow at the end */}
@@ -49,7 +54,7 @@ export function ERRelationship({ relationship, fromPos, toPos }: ERRelationshipP
         textAnchor="middle"
         className="pointer-events-none"
       >
-        {relationship.type}
+        {typeLabel}
       </text>
     </g>
   );

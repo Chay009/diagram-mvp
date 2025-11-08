@@ -1,40 +1,39 @@
 import { create } from 'zustand';
-import type { ERSchema, Table, Relationship } from '@/lib/utils/erParser';
-
-export interface TablePosition {
-  id: string;
-  x: number;
-  y: number;
-}
+import type { Diagram, DBTable, DBRelationship } from '@/lib/utils/chartdb-wrapper';
 
 export interface ERDiagramState {
-  // Schema data
-  schema: ERSchema | null;
-
-  // Table positions for canvas layout
-  tablePositions: TablePosition[];
+  // ChartDB diagram data
+  diagram: Diagram | null;
 
   // Selected states for UI interactions
   selectedTableId: string | null;
   selectedColumnId: string | null;
 
-  // Zoom and pan for canvas
+  // Canvas interaction state (inspired by ChartDB's canvas-context)
+  hoveringTableId: string | null;
+  editTableModeTable: { tableId: string; fieldId?: string } | null;
+  tempFloatingEdge: { sourceNodeId: string; targetNodeId?: string } | null;
+
+  // Zoom and pan for canvas (now handled by React Flow, kept for compatibility)
   zoom: number;
   panX: number;
   panY: number;
 
   // Actions
-  setSchema: (schema: ERSchema) => void;
+  setDiagram: (diagram: Diagram) => void;
   clearSchema: () => void;
 
-  // Table positioning
+  // Table positioning (now handled by diagram.tables[].x and y)
   setTablePosition: (tableId: string, x: number, y: number) => void;
-  getTablePosition: (tableId: string) => TablePosition | undefined;
-  autoLayoutTables: () => void;
 
   // Selection
   selectTable: (tableId: string | null) => void;
   selectColumn: (columnId: string | null) => void;
+
+  // Canvas interaction actions (inspired by ChartDB)
+  setHoveringTableId: (tableId: string | null) => void;
+  setEditTableModeTable: (table: { tableId: string; fieldId?: string } | null) => void;
+  setTempFloatingEdge: (edge: { sourceNodeId: string; targetNodeId?: string } | null) => void;
 
   // Canvas controls
   setZoom: (zoom: number) => void;
@@ -42,77 +41,61 @@ export interface ERDiagramState {
   resetView: () => void;
 
   // Helpers
-  getTableById: (tableId: string) => Table | undefined;
-  getRelationshipsForTable: (tableId: string) => Relationship[];
+  getTableById: (tableId: string) => DBTable | undefined;
+  getRelationshipsForTable: (tableId: string) => DBRelationship[];
 }
 
 export const useERDiagramStore = create<ERDiagramState>((set, get) => ({
   // Initial state
-  schema: null,
-  tablePositions: [],
+  diagram: null,
   selectedTableId: null,
   selectedColumnId: null,
+  hoveringTableId: null,
+  editTableModeTable: null,
+  tempFloatingEdge: null,
   zoom: 1,
   panX: 0,
   panY: 0,
 
-  // Schema actions
-  setSchema: (schema) => {
-    set({ schema });
-    // Auto-layout tables when schema is set
-    get().autoLayoutTables();
+  // Diagram actions
+  setDiagram: (diagram) => {
+    set({ diagram });
   },
 
   clearSchema: () => {
     set({
-      schema: null,
-      tablePositions: [],
+      diagram: null,
       selectedTableId: null,
       selectedColumnId: null,
     });
   },
 
-  // Table positioning
+  // Table positioning (now handled by mutating diagram.tables)
   setTablePosition: (tableId, x, y) => {
     set((state) => {
-      const positions = state.tablePositions.filter((p) => p.id !== tableId);
-      positions.push({ id: tableId, x, y });
-      return { tablePositions: positions };
-    });
-  },
+      if (!state.diagram || !state.diagram.tables) return state;
 
-  getTablePosition: (tableId) => {
-    return get().tablePositions.find((p) => p.id === tableId);
-  },
-
-  autoLayoutTables: () => {
-    const state = get();
-    if (!state.schema) return;
-
-    // Simple grid layout
-    const tables = state.schema.tables;
-    const columns = Math.ceil(Math.sqrt(tables.length));
-    const spacing = 300;
-    const offsetX = 100;
-    const offsetY = 100;
-
-    const positions: TablePosition[] = tables.map((table, index) => {
-      const row = Math.floor(index / columns);
-      const col = index % columns;
+      const updatedTables = state.diagram.tables.map((table) =>
+        table.id === tableId ? { ...table, x, y } : table
+      );
 
       return {
-        id: table.name,
-        x: offsetX + col * spacing,
-        y: offsetY + row * spacing,
+        diagram: {
+          ...state.diagram,
+          tables: updatedTables,
+        },
       };
     });
-
-    set({ tablePositions: positions });
   },
 
   // Selection
   selectTable: (tableId) => set({ selectedTableId: tableId }),
   selectColumn: (columnId) => set({ selectedColumnId: columnId }),
+
+  // Canvas interaction actions (inspired by ChartDB's canvas-context)
+  setHoveringTableId: (tableId) => set({ hoveringTableId: tableId }),
+  setEditTableModeTable: (table) => set({ editTableModeTable: table }),
+  setTempFloatingEdge: (edge) => set({ tempFloatingEdge: edge }),
 
   // Canvas controls
   setZoom: (zoom) => set({ zoom: Math.max(0.1, Math.min(3, zoom)) }),
@@ -122,15 +105,15 @@ export const useERDiagramStore = create<ERDiagramState>((set, get) => ({
   // Helpers
   getTableById: (tableId) => {
     const state = get();
-    return state.schema?.tables.find((t) => t.name === tableId);
+    return state.diagram?.tables?.find((t) => t.id === tableId);
   },
 
   getRelationshipsForTable: (tableId) => {
     const state = get();
-    if (!state.schema) return [];
+    if (!state.diagram || !state.diagram.relationships) return [];
 
-    return state.schema.relationships.filter(
-      (r) => r.from.table === tableId || r.to.table === tableId
+    return state.diagram.relationships.filter(
+      (r) => r.sourceTableId === tableId || r.targetTableId === tableId
     );
   },
 }));
