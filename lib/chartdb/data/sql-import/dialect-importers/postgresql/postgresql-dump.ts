@@ -217,7 +217,7 @@ function extractColumnsFromCreateTable(statement: string): SQLColumn[] {
     const columns: SQLColumn[] = [];
 
     // Extract everything between the first opening and last closing parenthesis
-    const columnMatch = statement.match(/CREATE\s+TABLE.*?\((.*)\)[^)]*;$/s);
+    const columnMatch = statement.match(/CREATE\s+TABLE.*?\((.*)\)[^)]*;$);
     if (!columnMatch || !columnMatch[1]) {
         return columns;
     }

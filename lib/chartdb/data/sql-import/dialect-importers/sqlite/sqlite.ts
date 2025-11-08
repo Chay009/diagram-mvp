@@ -155,7 +155,7 @@ function parseCreateTableStatements(sqlContent: string): {
 
     // Match all CREATE TABLE statements including those without column definitions
     const createTableRegex =
-        /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)["'`]?\s*\(([^;]+?)\)\s*;/gis;
+        /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)["'`]?\s*\(([^;]+?)\)\s*;/gi;
     let match;
 
     while ((match = createTableRegex.exec(cleanedSQL)) !== null) {
