@@ -3,8 +3,7 @@
 import { useEffect } from 'react';
 import { useDiagramStore, useERDiagramStore } from '@/stores';
 import { importDBML } from '@/lib/utils';
-import { ERTable } from './er/ERTable';
-import { ERRelationship } from './er/ERRelationship';
+import { ERDiagramCanvas } from './canvas/ERDiagramCanvas';
 
 export function ERDiagram() {
   const { erInput, setErError } = useDiagramStore();
@@ -12,11 +11,6 @@ export function ERDiagram() {
     diagram,
     setDiagram,
     clearSchema,
-    selectedTableId,
-    selectTable,
-    zoom,
-    panX,
-    panY,
   } = useERDiagramStore();
 
   // Parse DBML input using ChartDB's actual importDBML function
@@ -67,67 +61,6 @@ export function ERDiagram() {
     return null;
   }
 
-  // Calculate canvas size based on table positions (now tables have x, y built-in)
-  const tables = diagram.tables || [];
-  const relationships = diagram.relationships || [];
-  const canvasWidth = Math.max(1200, ...tables.map((t) => t.x + 400));
-  const canvasHeight = Math.max(800, ...tables.map((t) => t.y + 400));
-
-  return (
-    <div className="w-full h-full overflow-auto relative bg-gray-50">
-      <div
-        className="relative"
-        style={{
-          width: `${canvasWidth * zoom}px`,
-          height: `${canvasHeight * zoom}px`,
-          transform: `translate(${panX}px, ${panY}px)`,
-        }}
-      >
-        {/* SVG for relationships */}
-        <svg
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            width: `${canvasWidth}px`,
-            height: `${canvasHeight}px`,
-          }}
-        >
-          {relationships.map((relationship, index) => {
-            // Find source and target tables
-            const fromTable = tables.find(t => t.id === relationship.sourceTableId);
-            const toTable = tables.find(t => t.id === relationship.targetTableId);
-
-            if (!fromTable || !toTable) return null;
-
-            // Calculate connection points (center of tables)
-            const fromX = fromTable.x + 100;
-            const fromY = fromTable.y + 50;
-            const toX = toTable.x + 100;
-            const toY = toTable.y + 50;
-
-            return (
-              <ERRelationship
-                key={index}
-                relationship={relationship}
-                fromPos={{ x: fromX, y: fromY }}
-                toPos={{ x: toX, y: toY }}
-              />
-            );
-          })}
-        </svg>
-
-        {/* Tables */}
-        {tables.map((table) => {
-          return (
-            <ERTable
-              key={table.id}
-              table={table}
-              position={{ x: table.x, y: table.y }}
-              isSelected={selectedTableId === table.id}
-              onSelect={() => selectTable(table.id)}
-            />
-          );
-        })}
-      </div>
-    </div>
-  );
+  // Use React Flow canvas for rendering
+  return <ERDiagramCanvas diagram={diagram} />;
 }

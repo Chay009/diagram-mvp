@@ -9,7 +9,12 @@ export interface ERDiagramState {
   selectedTableId: string | null;
   selectedColumnId: string | null;
 
-  // Zoom and pan for canvas
+  // Canvas interaction state (inspired by ChartDB's canvas-context)
+  hoveringTableId: string | null;
+  editTableModeTable: { tableId: string; fieldId?: string } | null;
+  tempFloatingEdge: { sourceNodeId: string; targetNodeId?: string } | null;
+
+  // Zoom and pan for canvas (now handled by React Flow, kept for compatibility)
   zoom: number;
   panX: number;
   panY: number;
@@ -24,6 +29,11 @@ export interface ERDiagramState {
   // Selection
   selectTable: (tableId: string | null) => void;
   selectColumn: (columnId: string | null) => void;
+
+  // Canvas interaction actions (inspired by ChartDB)
+  setHoveringTableId: (tableId: string | null) => void;
+  setEditTableModeTable: (table: { tableId: string; fieldId?: string } | null) => void;
+  setTempFloatingEdge: (edge: { sourceNodeId: string; targetNodeId?: string } | null) => void;
 
   // Canvas controls
   setZoom: (zoom: number) => void;
@@ -40,6 +50,9 @@ export const useERDiagramStore = create<ERDiagramState>((set, get) => ({
   diagram: null,
   selectedTableId: null,
   selectedColumnId: null,
+  hoveringTableId: null,
+  editTableModeTable: null,
+  tempFloatingEdge: null,
   zoom: 1,
   panX: 0,
   panY: 0,
@@ -78,6 +91,11 @@ export const useERDiagramStore = create<ERDiagramState>((set, get) => ({
   // Selection
   selectTable: (tableId) => set({ selectedTableId: tableId }),
   selectColumn: (columnId) => set({ selectedColumnId: columnId }),
+
+  // Canvas interaction actions (inspired by ChartDB's canvas-context)
+  setHoveringTableId: (tableId) => set({ hoveringTableId: tableId }),
+  setEditTableModeTable: (table) => set({ editTableModeTable: table }),
+  setTempFloatingEdge: (edge) => set({ tempFloatingEdge: edge }),
 
   // Canvas controls
   setZoom: (zoom) => set({ zoom: Math.max(0.1, Math.min(3, zoom)) }),
