@@ -9,6 +9,7 @@ export function CloudDiagram() {
   const { cloudInput, setCloudError } = useDiagramStore();
   const { getCurrentColors } = useThemeStore();
   const containerRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const graphvizRef = useRef<any>(null);
 
   useEffect(() => {
@@ -59,12 +60,12 @@ export function CloudDiagram() {
           <div className="text-xs text-left bg-gray-100 p-3 rounded mt-4 font-mono max-w-md">
             <div className="font-semibold mb-2 text-gray-700">Example syntax:</div>
             <div className="text-gray-600">
-              web: aws-ec2 "Web"
+              web: aws-ec2 &quot;Web&quot;
               <br />
-              api: aws-lambda "API"
+              api: aws-lambda &quot;API&quot;
               <br />
               <br />
-              web -&gt; api "HTTP"
+              web -&gt; api &quot;HTTP&quot;
             </div>
           </div>
         </div>

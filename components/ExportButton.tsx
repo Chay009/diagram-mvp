@@ -6,7 +6,7 @@ import { exportDiagram, generateFilename, ExportFormat } from '@/lib/utils';
 import { useDiagramStore } from '@/stores';
 
 interface ExportButtonProps {
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function ExportButton({ containerRef }: ExportButtonProps) {

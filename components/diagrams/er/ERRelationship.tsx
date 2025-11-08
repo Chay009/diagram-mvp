@@ -1,10 +1,10 @@
 'use client';
 
 import { useThemeStore } from '@/stores';
-import type { Relationship } from '@/lib/utils/erParser';
+import type { DBMLRelationship } from '@/lib/utils/dbmlParser';
 
 interface ERRelationshipProps {
-  relationship: Relationship;
+  relationship: DBMLRelationship;
   fromPos: { x: number; y: number };
   toPos: { x: number; y: number };
 }
@@ -17,9 +17,6 @@ export function ERRelationship({ relationship, fromPos, toPos }: ERRelationshipP
   const midX = (fromPos.x + toPos.x) / 2;
   const midY = (fromPos.y + toPos.y) / 2;
 
-  // Create SVG path
-  const path = `M ${fromPos.x} ${fromPos.y} L ${toPos.x} ${toPos.y}`;
-
   return (
     <g>
       {/* Relationship line */}
@@ -30,7 +27,7 @@ export function ERRelationship({ relationship, fromPos, toPos }: ERRelationshipP
         y2={toPos.y}
         stroke={colors.secondary}
         strokeWidth={2}
-        strokeDasharray={relationship.type === 'one-to-one' ? '5,5' : 'none'}
+        strokeDasharray={relationship.type === '1-1' ? '5,5' : 'none'}
       />
 
       {/* Arrow at the end */}

@@ -39,11 +39,23 @@ export interface DBMLDiagram {
 
 /**
  * Parse DBML string to diagram structure
+ * This is a convenience wrapper around parseDatabaseSchema
  */
 export function parseDBML(dbml: string): DBMLDiagram {
+  return parseDatabaseSchema(dbml, 'dbml');
+}
+
+/**
+ * Parse database schema from various formats (DBML, SQL, etc.)
+ * Supports: 'dbml', 'mysql', 'postgres', 'mssql', 'schemarb'
+ */
+export function parseDatabaseSchema(
+  input: string,
+  format: 'dbml' | 'mysql' | 'postgres' | 'mssql' | 'schemarb' = 'dbml'
+): DBMLDiagram {
   try {
     const parser = new Parser();
-    const database = parser.parse(dbml, 'dbml');
+    const database = parser.parse(input, format);
 
     const tables: DBMLTable[] = database.schemas.flatMap((schema) =>
       schema.tables.map((table) => ({
@@ -63,7 +75,8 @@ export function parseDBML(dbml: string): DBMLDiagram {
     const relationships: DBMLRelationship[] = database.schemas.flatMap((schema) =>
       schema.tables.flatMap((table) =>
         (table.fields || []).flatMap((field) =>
-          (field.ref?.endpoints || []).map((ref: any) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ((field as any).ref?.endpoints || []).map((ref: any) => {
             const relationMapping: Record<string, '1-1' | '1-n' | 'n-1' | 'n-n'> = {
               '<>': '1-1',
               '>': '1-n',
@@ -89,7 +102,7 @@ export function parseDBML(dbml: string): DBMLDiagram {
 
     return { tables, relationships };
   } catch (error) {
-    throw new Error(`DBML Parse Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`Schema Parse Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -113,48 +126,4 @@ Table posts {
 }
 
 Ref: posts.author_id > users.id`;
-}
-
-/**
- * Convert SQL to DBML (basic conversion)
- */
-export function sqlToDBML(sql: string): string {
-  // This is a simplified conversion
-  // For production, you'd want a more robust SQL parser
-  let dbml = '';
-
-  const tableMatches = sql.matchAll(/CREATE\s+TABLE\s+(\w+)\s*\(([\s\S]*?)\);/gi);
-
-  for (const match of tableMatches) {
-    const tableName = match[1];
-    const columns = match[2];
-
-    dbml += `Table ${tableName} {\n`;
-
-    const columnLines = columns.split(',').map((col) => col.trim());
-    for (const col of columnLines) {
-      const parts = col.split(/\s+/);
-      if (parts.length >= 2) {
-        const name = parts[0];
-        const type = parts[1];
-        let attrs = '';
-
-        if (col.toUpperCase().includes('PRIMARY KEY')) {
-          attrs += ' [primary key]';
-        }
-        if (col.toUpperCase().includes('UNIQUE')) {
-          attrs += ' [unique]';
-        }
-        if (col.toUpperCase().includes('NOT NULL')) {
-          attrs += ' [not null]';
-        }
-
-        dbml += `  ${name} ${type}${attrs}\n`;
-      }
-    }
-
-    dbml += '}\n\n';
-  }
-
-  return dbml;
 }
