@@ -13,7 +13,7 @@ export function ERDiagram() {
     clearSchema,
   } = useERDiagramStore();
 
-  // Parse DBML input using ChartDB's actual parser
+  // Parse DBML or SQL input using auto-detection
   useEffect(() => {
     if (!erInput.trim()) {
       clearSchema();
@@ -21,14 +21,14 @@ export function ERDiagram() {
       return;
     }
 
-    // importSchema is async
+    // importSchema auto-detects SQL vs DBML
     const parseSchema = async () => {
       try {
         const parsed = await importSchema(erInput);
         setDiagram(parsed);
         setErError(null);
       } catch (error) {
-        setErError(error instanceof Error ? error.message : 'Failed to parse DBML');
+        setErError(error instanceof Error ? error.message : 'Failed to parse schema');
         clearSchema();
       }
     };
@@ -40,22 +40,32 @@ export function ERDiagram() {
     return (
       <div className="flex items-center justify-center h-full text-gray-400">
         <div className="text-center">
-          <p className="text-sm mb-2">Enter DBML (Database Markup Language) to see ER diagram</p>
-          <div className="text-xs text-left bg-gray-100 p-3 rounded mt-4 font-mono max-w-md mx-auto">
-            <div className="font-semibold mb-2 text-gray-700">Example DBML:</div>
-            <div className="text-gray-600">
-              Table users {'{'}<br />
-              &nbsp;&nbsp;id integer [pk]<br />
-              &nbsp;&nbsp;name varchar<br />
-              {'}'}<br />
-              <br />
-              Ref: posts.user_id &gt; users.id
+          <p className="text-sm mb-2">Enter DBML or SQL DDL to see ER diagram</p>
+          <div className="grid grid-cols-2 gap-4 mt-4 max-w-2xl">
+            <div className="text-xs text-left bg-gray-100 p-3 rounded font-mono">
+              <div className="font-semibold mb-2 text-gray-700">Example DBML:</div>
+              <div className="text-gray-600">
+                Table users {'{'}<br />
+                &nbsp;&nbsp;id integer [pk]<br />
+                &nbsp;&nbsp;name varchar<br />
+                {'}'}<br />
+                <br />
+                Ref: posts.user_id &gt; users.id
+              </div>
+            </div>
+            <div className="text-xs text-left bg-gray-100 p-3 rounded font-mono">
+              <div className="font-semibold mb-2 text-gray-700">Example SQL:</div>
+              <div className="text-gray-600">
+                CREATE TABLE users (<br />
+                &nbsp;&nbsp;id INT PRIMARY KEY,<br />
+                &nbsp;&nbsp;name VARCHAR(255)<br />
+                );<br />
+                <br />
+                -- Auto-detects PostgreSQL,<br />
+                -- MySQL, MSSQL
+              </div>
             </div>
           </div>
-          <p className="text-xs mt-4 text-gray-500">
-            Note: ChartDB also supports SQL import (PostgreSQL, MySQL, SQL Server, SQLite)<br />
-            but it requires ES2018+ JavaScript target. Currently using DBML only.
-          </p>
         </div>
       </div>
     );

@@ -69,10 +69,10 @@ export function ERDiagramCanvas({ diagram }: ERDiagramCanvasProps) {
       source: relationship.sourceTableId,
       target: relationship.targetTableId,
       sourceHandle: relationship.sourceFieldId
-        ? `${relationship.sourceFieldId}-right`
+        ? `${relationship.sourceFieldId}-left`  // Source handles are on the LEFT
         : `${relationship.sourceTableId}-top`,
       targetHandle: relationship.targetFieldId
-        ? `${relationship.targetFieldId}-left`
+        ? `${relationship.targetFieldId}-right` // Target handles are on the RIGHT
         : `${relationship.targetTableId}-bottom`,
       data: {
         relationship,
