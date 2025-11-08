@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ERSchema, Table, Relationship } from '@/lib/utils/erParser';
+import type { DBMLDiagram, DBMLTable, DBMLRelationship } from '@/lib/utils/dbmlParser';
 
 export interface TablePosition {
   id: string;
@@ -8,8 +8,8 @@ export interface TablePosition {
 }
 
 export interface ERDiagramState {
-  // Schema data
-  schema: ERSchema | null;
+  // DBML diagram data
+  dbmlDiagram: DBMLDiagram | null;
 
   // Table positions for canvas layout
   tablePositions: TablePosition[];
@@ -24,7 +24,7 @@ export interface ERDiagramState {
   panY: number;
 
   // Actions
-  setSchema: (schema: ERSchema) => void;
+  setDBMLDiagram: (diagram: DBMLDiagram) => void;
   clearSchema: () => void;
 
   // Table positioning
@@ -42,13 +42,13 @@ export interface ERDiagramState {
   resetView: () => void;
 
   // Helpers
-  getTableById: (tableId: string) => Table | undefined;
-  getRelationshipsForTable: (tableId: string) => Relationship[];
+  getTableById: (tableId: string) => DBMLTable | undefined;
+  getRelationshipsForTable: (tableId: string) => DBMLRelationship[];
 }
 
 export const useERDiagramStore = create<ERDiagramState>((set, get) => ({
   // Initial state
-  schema: null,
+  dbmlDiagram: null,
   tablePositions: [],
   selectedTableId: null,
   selectedColumnId: null,
@@ -56,16 +56,16 @@ export const useERDiagramStore = create<ERDiagramState>((set, get) => ({
   panX: 0,
   panY: 0,
 
-  // Schema actions
-  setSchema: (schema) => {
-    set({ schema });
-    // Auto-layout tables when schema is set
+  // DBML diagram actions
+  setDBMLDiagram: (diagram) => {
+    set({ dbmlDiagram: diagram });
+    // Auto-layout tables when diagram is set
     get().autoLayoutTables();
   },
 
   clearSchema: () => {
     set({
-      schema: null,
+      dbmlDiagram: null,
       tablePositions: [],
       selectedTableId: null,
       selectedColumnId: null,
@@ -87,10 +87,10 @@ export const useERDiagramStore = create<ERDiagramState>((set, get) => ({
 
   autoLayoutTables: () => {
     const state = get();
-    if (!state.schema) return;
+    if (!state.dbmlDiagram) return;
 
     // Simple grid layout
-    const tables = state.schema.tables;
+    const tables = state.dbmlDiagram.tables;
     const columns = Math.ceil(Math.sqrt(tables.length));
     const spacing = 300;
     const offsetX = 100;
@@ -122,14 +122,14 @@ export const useERDiagramStore = create<ERDiagramState>((set, get) => ({
   // Helpers
   getTableById: (tableId) => {
     const state = get();
-    return state.schema?.tables.find((t) => t.name === tableId);
+    return state.dbmlDiagram?.tables.find((t) => t.name === tableId);
   },
 
   getRelationshipsForTable: (tableId) => {
     const state = get();
-    if (!state.schema) return [];
+    if (!state.dbmlDiagram) return [];
 
-    return state.schema.relationships.filter(
+    return state.dbmlDiagram.relationships.filter(
       (r) => r.from.table === tableId || r.to.table === tableId
     );
   },

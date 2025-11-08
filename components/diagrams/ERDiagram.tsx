@@ -2,15 +2,15 @@
 
 import { useEffect } from 'react';
 import { useDiagramStore, useERDiagramStore } from '@/stores';
-import { parseERInput } from '@/lib/utils';
+import { parseDBML } from '@/lib/utils';
 import { ERTable } from './er/ERTable';
 import { ERRelationship } from './er/ERRelationship';
 
 export function ERDiagram() {
   const { erInput, setErError } = useDiagramStore();
   const {
-    schema,
-    setSchema,
+    dbmlDiagram,
+    setDBMLDiagram,
     clearSchema,
     tablePositions,
     selectedTableId,
@@ -21,7 +21,7 @@ export function ERDiagram() {
     getTablePosition,
   } = useERDiagramStore();
 
-  // Parse input and update schema
+  // Parse DBML input and update diagram
   useEffect(() => {
     if (!erInput.trim()) {
       clearSchema();
@@ -30,24 +30,37 @@ export function ERDiagram() {
     }
 
     try {
-      const parsedSchema = parseERInput(erInput);
-      setSchema(parsedSchema);
+      const parsed = parseDBML(erInput);
+      setDBMLDiagram(parsed);
       setErError(null);
     } catch (error) {
-      setErError(error instanceof Error ? error.message : 'Failed to parse schema');
+      setErError(error instanceof Error ? error.message : 'Failed to parse DBML');
       clearSchema();
     }
-  }, [erInput, setSchema, clearSchema, setErError]);
+  }, [erInput, setDBMLDiagram, clearSchema, setErError]);
 
   if (!erInput.trim()) {
     return (
       <div className="flex items-center justify-center h-full text-gray-400">
-        <p className="text-sm">Enter SQL schema or JSON to see ER diagram</p>
+        <div className="text-center">
+          <p className="text-sm mb-2">Enter DBML (Database Markup Language) to see ER diagram</p>
+          <div className="text-xs text-left bg-gray-100 p-3 rounded mt-4 font-mono max-w-md">
+            <div className="font-semibold mb-2 text-gray-700">Example DBML:</div>
+            <div className="text-gray-600">
+              Table users {'{'}<br />
+              &nbsp;&nbsp;id integer [pk]<br />
+              &nbsp;&nbsp;name varchar<br />
+              {'}'}<br />
+              <br />
+              Ref: posts.user_id &gt; users.id
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!schema) {
+  if (!dbmlDiagram) {
     return null;
   }
 
@@ -73,7 +86,7 @@ export function ERDiagram() {
             height: `${canvasHeight}px`,
           }}
         >
-          {schema.relationships.map((relationship, index) => {
+          {dbmlDiagram.relationships.map((relationship, index) => {
             const fromPos = getTablePosition(relationship.from.table);
             const toPos = getTablePosition(relationship.to.table);
 
@@ -97,7 +110,7 @@ export function ERDiagram() {
         </svg>
 
         {/* Tables */}
-        {schema.tables.map((table) => {
+        {dbmlDiagram.tables.map((table) => {
           const position = getTablePosition(table.name);
           if (!position) return null;
 

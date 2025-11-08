@@ -1,11 +1,11 @@
 'use client';
 
-import type { Table } from '@/lib/utils/erParser';
+import type { DBMLTable } from '@/lib/utils/dbmlParser';
 import { useThemeStore } from '@/stores';
-import { Key, Link } from 'lucide-react';
+import { Key, Link2 } from 'lucide-react';
 
 interface ERTableProps {
-  table: Table;
+  table: DBMLTable;
   position: { x: number; y: number };
   isSelected?: boolean;
   onSelect?: () => void;
@@ -47,32 +47,32 @@ export function ERTable({ table, position, isSelected, onSelect }: ERTableProps)
           {table.name}
         </div>
 
-        {/* Columns */}
+        {/* Fields */}
         <div className="divide-y" style={{ borderColor: colors.border }}>
-          {table.columns.map((column, index) => (
+          {table.fields.map((field, index) => (
             <div
               key={index}
               className="px-4 py-2 flex items-center gap-2 text-sm hover:bg-gray-50"
             >
               {/* Icons */}
               <div className="flex gap-1">
-                {column.isPrimaryKey && (
-                  <Key size={14} className="text-yellow-500" title="Primary Key" />
+                {field.pk && (
+                  <Key size={14} className="text-yellow-500" />
                 )}
-                {column.isForeignKey && (
-                  <Link size={14} className="text-blue-500" title="Foreign Key" />
+                {field.unique && (
+                  <Link2 size={14} className="text-purple-500" />
                 )}
               </div>
 
-              {/* Column Name */}
-              <span className="font-medium flex-1">{column.name}</span>
+              {/* Field Name */}
+              <span className="font-medium flex-1">{field.name}</span>
 
-              {/* Column Type */}
-              <span className="text-gray-500 text-xs">{column.type}</span>
+              {/* Field Type */}
+              <span className="text-gray-500 text-xs">{field.type}</span>
 
-              {/* Nullable indicator */}
-              {!column.nullable && (
-                <span className="text-xs text-gray-400" title="NOT NULL">
+              {/* Not null indicator */}
+              {field.notNull && (
+                <span className="text-xs text-gray-400">
                   *
                 </span>
               )}

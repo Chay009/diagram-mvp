@@ -38,7 +38,22 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
     participant Bob
     Alice->>Bob: Hello Bob, how are you?
     Bob-->>Alice: Great!`,
-  erInput: '',
+  erInput: `Table users {
+  id integer [primary key]
+  username varchar
+  email varchar [unique]
+  created_at timestamp
+}
+
+Table posts {
+  id integer [primary key]
+  title varchar
+  content text
+  author_id integer
+  created_at timestamp
+}
+
+Ref: posts.author_id > users.id`,
   cloudInput: `# AWS Architecture Example
 group "VPC" {
   web: aws-ec2 "Web Server"
