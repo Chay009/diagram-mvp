@@ -35,7 +35,7 @@ export const databaseEditionToLabelMap: Record<DatabaseEdition, string> = {
     [DatabaseEdition.SQLITE_CLOUDFLARE_D1]: 'Cloudflare D1',
 };
 
-export const databaseEditionToImageMap: Record<DatabaseEdition, string> = {
+export const databaseEditionToImageMap: Record<DatabaseEdition, unknown> = {
     // PostgreSQL
     [DatabaseEdition.POSTGRESQL_SUPABASE]: SupabaseImage,
     [DatabaseEdition.POSTGRESQL_TIMESCALE]: TimescaleImage,

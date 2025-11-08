@@ -27,14 +27,19 @@ export function ERDiagram() {
       return;
     }
 
-    try {
-      const parsed = importDBML(erInput);
-      setDiagram(parsed);
-      setErError(null);
-    } catch (error) {
-      setErError(error instanceof Error ? error.message : 'Failed to parse DBML');
-      clearSchema();
-    }
+    // importDBML is async, so we need to handle it properly
+    const parseDBML = async () => {
+      try {
+        const parsed = await importDBML(erInput);
+        setDiagram(parsed);
+        setErError(null);
+      } catch (error) {
+        setErError(error instanceof Error ? error.message : 'Failed to parse DBML');
+        clearSchema();
+      }
+    };
+
+    parseDBML();
   }, [erInput, setDiagram, clearSchema, setErError]);
 
   if (!erInput.trim()) {

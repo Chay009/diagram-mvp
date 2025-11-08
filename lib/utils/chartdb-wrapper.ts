@@ -4,8 +4,17 @@
  * This uses ChartDB's real implementation, not custom code
  */
 
-// Export ChartDB's actual DBML import function
-export { importDBML } from '@/lib/chartdb/dbml/dbml-import/dbml-import';
+import { importDBMLToDiagram } from '@/lib/chartdb/dbml/dbml-import/dbml-import';
+import { DatabaseType } from '@/lib/chartdb/domain/database-type';
+import type { Diagram } from '@/lib/chartdb/domain/diagram';
+
+// Wrapper that provides a simpler API with default database type
+export async function importDBML(dbmlContent: string, databaseType: DatabaseType = DatabaseType.GENERIC): Promise<Diagram> {
+  return importDBMLToDiagram(dbmlContent, { databaseType });
+}
+
+// Export the original function if needed
+export { importDBMLToDiagram };
 
 // Export ChartDB's actual types
 export type { Diagram } from '@/lib/chartdb/domain/diagram';

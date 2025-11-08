@@ -60,7 +60,7 @@ export const useERDiagramStore = create<ERDiagramState>((set, get) => ({
   // Table positioning (now handled by mutating diagram.tables)
   setTablePosition: (tableId, x, y) => {
     set((state) => {
-      if (!state.diagram) return state;
+      if (!state.diagram || !state.diagram.tables) return state;
 
       const updatedTables = state.diagram.tables.map((table) =>
         table.id === tableId ? { ...table, x, y } : table
@@ -87,12 +87,12 @@ export const useERDiagramStore = create<ERDiagramState>((set, get) => ({
   // Helpers
   getTableById: (tableId) => {
     const state = get();
-    return state.diagram?.tables.find((t) => t.id === tableId);
+    return state.diagram?.tables?.find((t) => t.id === tableId);
   },
 
   getRelationshipsForTable: (tableId) => {
     const state = get();
-    if (!state.diagram) return [];
+    if (!state.diagram || !state.diagram.relationships) return [];
 
     return state.diagram.relationships.filter(
       (r) => r.sourceTableId === tableId || r.targetTableId === tableId
