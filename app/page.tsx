@@ -1,4 +1,4 @@
-import { DiagramEditor } from '@/components';
+import { DiagramEditor } from '@/components/DiagramEditor';
 
 export const dynamic = 'force-dynamic';
 
