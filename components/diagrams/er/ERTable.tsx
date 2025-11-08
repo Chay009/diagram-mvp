@@ -1,6 +1,6 @@
 'use client';
 
-import type { DBTable } from '@/lib/utils/chartdb-integration';
+import type { DBTable } from '@/lib/utils/chartdb-wrapper';
 import { useThemeStore } from '@/stores';
 import { Key, Link2 } from 'lucide-react';
 

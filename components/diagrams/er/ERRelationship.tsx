@@ -1,7 +1,8 @@
 'use client';
 
 import { useThemeStore } from '@/stores';
-import type { DBRelationship } from '@/lib/utils/chartdb-integration';
+import type { DBRelationship } from '@/lib/utils/chartdb-wrapper';
+import { determineRelationshipType } from '@/lib/utils/chartdb-wrapper';
 
 interface ERRelationshipProps {
   relationship: DBRelationship;
@@ -17,8 +18,12 @@ export function ERRelationship({ relationship, fromPos, toPos }: ERRelationshipP
   const midX = (fromPos.x + toPos.x) / 2;
   const midY = (fromPos.y + toPos.y) / 2;
 
-  // Format relationship type for display
-  const typeLabel = relationship.type.replace(/_/g, '-');
+  // Get relationship type from ChartDB's cardinality system
+  const relationshipType = determineRelationshipType({
+    sourceCardinality: relationship.sourceCardinality,
+    targetCardinality: relationship.targetCardinality,
+  });
+  const typeLabel = relationshipType.replace(/_/g, '-');
 
   return (
     <g>
@@ -30,7 +35,7 @@ export function ERRelationship({ relationship, fromPos, toPos }: ERRelationshipP
         y2={toPos.y}
         stroke={colors.secondary}
         strokeWidth={2}
-        strokeDasharray={relationship.type === 'one_to_one' ? '5,5' : 'none'}
+        strokeDasharray={relationshipType === 'one_to_one' ? '5,5' : 'none'}
       />
 
       {/* Arrow at the end */}

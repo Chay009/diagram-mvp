@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Diagram, DBTable, DBRelationship } from '@/lib/utils/chartdb-integration';
+import type { Diagram, DBTable, DBRelationship } from '@/lib/utils/chartdb-wrapper';
 
 export interface ERDiagramState {
   // ChartDB diagram data

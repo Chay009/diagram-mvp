@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useDiagramStore, useERDiagramStore } from '@/stores';
-import { parseDatabase } from '@/lib/utils';
+import { importDBML } from '@/lib/utils';
 import { ERTable } from './er/ERTable';
 import { ERRelationship } from './er/ERRelationship';
 
@@ -19,7 +19,7 @@ export function ERDiagram() {
     panY,
   } = useERDiagramStore();
 
-  // Parse DBML input and update diagram using ChartDB
+  // Parse DBML input using ChartDB's actual importDBML function
   useEffect(() => {
     if (!erInput.trim()) {
       clearSchema();
@@ -28,7 +28,7 @@ export function ERDiagram() {
     }
 
     try {
-      const parsed = parseDatabase(erInput, 'dbml');
+      const parsed = importDBML(erInput);
       setDiagram(parsed);
       setErError(null);
     } catch (error) {
@@ -63,8 +63,10 @@ export function ERDiagram() {
   }
 
   // Calculate canvas size based on table positions (now tables have x, y built-in)
-  const canvasWidth = Math.max(1200, ...diagram.tables.map((t) => t.x + 400));
-  const canvasHeight = Math.max(800, ...diagram.tables.map((t) => t.y + 400));
+  const tables = diagram.tables || [];
+  const relationships = diagram.relationships || [];
+  const canvasWidth = Math.max(1200, ...tables.map((t) => t.x + 400));
+  const canvasHeight = Math.max(800, ...tables.map((t) => t.y + 400));
 
   return (
     <div className="w-full h-full overflow-auto relative bg-gray-50">
@@ -84,10 +86,10 @@ export function ERDiagram() {
             height: `${canvasHeight}px`,
           }}
         >
-          {diagram.relationships.map((relationship, index) => {
+          {relationships.map((relationship, index) => {
             // Find source and target tables
-            const fromTable = diagram.tables.find(t => t.id === relationship.sourceTableId);
-            const toTable = diagram.tables.find(t => t.id === relationship.targetTableId);
+            const fromTable = tables.find(t => t.id === relationship.sourceTableId);
+            const toTable = tables.find(t => t.id === relationship.targetTableId);
 
             if (!fromTable || !toTable) return null;
 
@@ -109,7 +111,7 @@ export function ERDiagram() {
         </svg>
 
         {/* Tables */}
-        {diagram.tables.map((table) => {
+        {tables.map((table) => {
           return (
             <ERTable
               key={table.id}
