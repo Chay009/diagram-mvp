@@ -1,10 +1,10 @@
 'use client';
 
 import { useThemeStore } from '@/stores';
-import type { DBMLRelationship } from '@/lib/utils/dbmlParser';
+import type { DBRelationship } from '@/lib/utils/chartdb-integration';
 
 interface ERRelationshipProps {
-  relationship: DBMLRelationship;
+  relationship: DBRelationship;
   fromPos: { x: number; y: number };
   toPos: { x: number; y: number };
 }
@@ -17,6 +17,9 @@ export function ERRelationship({ relationship, fromPos, toPos }: ERRelationshipP
   const midX = (fromPos.x + toPos.x) / 2;
   const midY = (fromPos.y + toPos.y) / 2;
 
+  // Format relationship type for display
+  const typeLabel = relationship.type.replace(/_/g, '-');
+
   return (
     <g>
       {/* Relationship line */}
@@ -27,7 +30,7 @@ export function ERRelationship({ relationship, fromPos, toPos }: ERRelationshipP
         y2={toPos.y}
         stroke={colors.secondary}
         strokeWidth={2}
-        strokeDasharray={relationship.type === '1-1' ? '5,5' : 'none'}
+        strokeDasharray={relationship.type === 'one_to_one' ? '5,5' : 'none'}
       />
 
       {/* Arrow at the end */}
@@ -46,7 +49,7 @@ export function ERRelationship({ relationship, fromPos, toPos }: ERRelationshipP
         textAnchor="middle"
         className="pointer-events-none"
       >
-        {relationship.type}
+        {typeLabel}
       </text>
     </g>
   );

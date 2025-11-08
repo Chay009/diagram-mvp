@@ -1,11 +1,11 @@
 'use client';
 
-import type { DBMLTable } from '@/lib/utils/dbmlParser';
+import type { DBTable } from '@/lib/utils/chartdb-integration';
 import { useThemeStore } from '@/stores';
 import { Key, Link2 } from 'lucide-react';
 
 interface ERTableProps {
-  table: DBMLTable;
+  table: DBTable;
   position: { x: number; y: number };
   isSelected?: boolean;
   onSelect?: () => void;
@@ -41,22 +41,23 @@ export function ERTable({ table, position, isSelected, onSelect }: ERTableProps)
         <div
           className="px-4 py-2 font-semibold text-white"
           style={{
-            backgroundColor: colors.primary,
+            backgroundColor: table.color || colors.primary,
           }}
         >
           {table.name}
+          {table.schema && <span className="text-xs opacity-75 ml-2">({table.schema})</span>}
         </div>
 
         {/* Fields */}
         <div className="divide-y" style={{ borderColor: colors.border }}>
-          {table.fields.map((field, index) => (
+          {table.fields.map((field) => (
             <div
-              key={index}
+              key={field.id}
               className="px-4 py-2 flex items-center gap-2 text-sm hover:bg-gray-50"
             >
               {/* Icons */}
               <div className="flex gap-1">
-                {field.pk && (
+                {field.primaryKey && (
                   <Key size={14} className="text-yellow-500" />
                 )}
                 {field.unique && (
@@ -68,10 +69,10 @@ export function ERTable({ table, position, isSelected, onSelect }: ERTableProps)
               <span className="font-medium flex-1">{field.name}</span>
 
               {/* Field Type */}
-              <span className="text-gray-500 text-xs">{field.type}</span>
+              <span className="text-gray-500 text-xs">{field.type.name}</span>
 
               {/* Not null indicator */}
-              {field.notNull && (
+              {!field.nullable && (
                 <span className="text-xs text-gray-400">
                   *
                 </span>

@@ -2,26 +2,24 @@
 
 import { useEffect } from 'react';
 import { useDiagramStore, useERDiagramStore } from '@/stores';
-import { parseDBML } from '@/lib/utils';
+import { parseDatabase } from '@/lib/utils';
 import { ERTable } from './er/ERTable';
 import { ERRelationship } from './er/ERRelationship';
 
 export function ERDiagram() {
   const { erInput, setErError } = useDiagramStore();
   const {
-    dbmlDiagram,
-    setDBMLDiagram,
+    diagram,
+    setDiagram,
     clearSchema,
-    tablePositions,
     selectedTableId,
     selectTable,
     zoom,
     panX,
     panY,
-    getTablePosition,
   } = useERDiagramStore();
 
-  // Parse DBML input and update diagram
+  // Parse DBML input and update diagram using ChartDB
   useEffect(() => {
     if (!erInput.trim()) {
       clearSchema();
@@ -30,14 +28,14 @@ export function ERDiagram() {
     }
 
     try {
-      const parsed = parseDBML(erInput);
-      setDBMLDiagram(parsed);
+      const parsed = parseDatabase(erInput, 'dbml');
+      setDiagram(parsed);
       setErError(null);
     } catch (error) {
       setErError(error instanceof Error ? error.message : 'Failed to parse DBML');
       clearSchema();
     }
-  }, [erInput, setDBMLDiagram, clearSchema, setErError]);
+  }, [erInput, setDiagram, clearSchema, setErError]);
 
   if (!erInput.trim()) {
     return (
@@ -60,13 +58,13 @@ export function ERDiagram() {
     );
   }
 
-  if (!dbmlDiagram) {
+  if (!diagram) {
     return null;
   }
 
-  // Calculate canvas size based on table positions
-  const canvasWidth = Math.max(1200, ...tablePositions.map((p) => p.x + 400));
-  const canvasHeight = Math.max(800, ...tablePositions.map((p) => p.y + 400));
+  // Calculate canvas size based on table positions (now tables have x, y built-in)
+  const canvasWidth = Math.max(1200, ...diagram.tables.map((t) => t.x + 400));
+  const canvasHeight = Math.max(800, ...diagram.tables.map((t) => t.y + 400));
 
   return (
     <div className="w-full h-full overflow-auto relative bg-gray-50">
@@ -86,17 +84,18 @@ export function ERDiagram() {
             height: `${canvasHeight}px`,
           }}
         >
-          {dbmlDiagram.relationships.map((relationship, index) => {
-            const fromPos = getTablePosition(relationship.from.table);
-            const toPos = getTablePosition(relationship.to.table);
+          {diagram.relationships.map((relationship, index) => {
+            // Find source and target tables
+            const fromTable = diagram.tables.find(t => t.id === relationship.sourceTableId);
+            const toTable = diagram.tables.find(t => t.id === relationship.targetTableId);
 
-            if (!fromPos || !toPos) return null;
+            if (!fromTable || !toTable) return null;
 
             // Calculate connection points (center of tables)
-            const fromX = fromPos.x + 100;
-            const fromY = fromPos.y + 50;
-            const toX = toPos.x + 100;
-            const toY = toPos.y + 50;
+            const fromX = fromTable.x + 100;
+            const fromY = fromTable.y + 50;
+            const toX = toTable.x + 100;
+            const toY = toTable.y + 50;
 
             return (
               <ERRelationship
@@ -110,17 +109,14 @@ export function ERDiagram() {
         </svg>
 
         {/* Tables */}
-        {dbmlDiagram.tables.map((table) => {
-          const position = getTablePosition(table.name);
-          if (!position) return null;
-
+        {diagram.tables.map((table) => {
           return (
             <ERTable
-              key={table.name}
+              key={table.id}
               table={table}
-              position={position}
-              isSelected={selectedTableId === table.name}
-              onSelect={() => selectTable(table.name)}
+              position={{ x: table.x, y: table.y }}
+              isSelected={selectedTableId === table.id}
+              onSelect={() => selectTable(table.id)}
             />
           );
         })}

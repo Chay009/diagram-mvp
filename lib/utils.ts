@@ -11,4 +11,4 @@ export * from './utils/exportUtils';
 export * from './utils/erParser';
 export * from './utils/cloudSyntax';
 export * from './utils/cloudBeautify';
-export * from './utils/dbmlParser';
+export * from './utils/chartdb-integration';

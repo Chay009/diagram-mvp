@@ -1,18 +1,9 @@
 import { create } from 'zustand';
-import type { DBMLDiagram, DBMLTable, DBMLRelationship } from '@/lib/utils/dbmlParser';
-
-export interface TablePosition {
-  id: string;
-  x: number;
-  y: number;
-}
+import type { Diagram, DBTable, DBRelationship } from '@/lib/utils/chartdb-integration';
 
 export interface ERDiagramState {
-  // DBML diagram data
-  dbmlDiagram: DBMLDiagram | null;
-
-  // Table positions for canvas layout
-  tablePositions: TablePosition[];
+  // ChartDB diagram data
+  diagram: Diagram | null;
 
   // Selected states for UI interactions
   selectedTableId: string | null;
@@ -24,13 +15,11 @@ export interface ERDiagramState {
   panY: number;
 
   // Actions
-  setDBMLDiagram: (diagram: DBMLDiagram) => void;
+  setDiagram: (diagram: Diagram) => void;
   clearSchema: () => void;
 
-  // Table positioning
+  // Table positioning (now handled by diagram.tables[].x and y)
   setTablePosition: (tableId: string, x: number, y: number) => void;
-  getTablePosition: (tableId: string) => TablePosition | undefined;
-  autoLayoutTables: () => void;
 
   // Selection
   selectTable: (tableId: string | null) => void;
@@ -42,72 +31,48 @@ export interface ERDiagramState {
   resetView: () => void;
 
   // Helpers
-  getTableById: (tableId: string) => DBMLTable | undefined;
-  getRelationshipsForTable: (tableId: string) => DBMLRelationship[];
+  getTableById: (tableId: string) => DBTable | undefined;
+  getRelationshipsForTable: (tableId: string) => DBRelationship[];
 }
 
 export const useERDiagramStore = create<ERDiagramState>((set, get) => ({
   // Initial state
-  dbmlDiagram: null,
-  tablePositions: [],
+  diagram: null,
   selectedTableId: null,
   selectedColumnId: null,
   zoom: 1,
   panX: 0,
   panY: 0,
 
-  // DBML diagram actions
-  setDBMLDiagram: (diagram) => {
-    set({ dbmlDiagram: diagram });
-    // Auto-layout tables when diagram is set
-    get().autoLayoutTables();
+  // Diagram actions
+  setDiagram: (diagram) => {
+    set({ diagram });
   },
 
   clearSchema: () => {
     set({
-      dbmlDiagram: null,
-      tablePositions: [],
+      diagram: null,
       selectedTableId: null,
       selectedColumnId: null,
     });
   },
 
-  // Table positioning
+  // Table positioning (now handled by mutating diagram.tables)
   setTablePosition: (tableId, x, y) => {
     set((state) => {
-      const positions = state.tablePositions.filter((p) => p.id !== tableId);
-      positions.push({ id: tableId, x, y });
-      return { tablePositions: positions };
-    });
-  },
+      if (!state.diagram) return state;
 
-  getTablePosition: (tableId) => {
-    return get().tablePositions.find((p) => p.id === tableId);
-  },
-
-  autoLayoutTables: () => {
-    const state = get();
-    if (!state.dbmlDiagram) return;
-
-    // Simple grid layout
-    const tables = state.dbmlDiagram.tables;
-    const columns = Math.ceil(Math.sqrt(tables.length));
-    const spacing = 300;
-    const offsetX = 100;
-    const offsetY = 100;
-
-    const positions: TablePosition[] = tables.map((table, index) => {
-      const row = Math.floor(index / columns);
-      const col = index % columns;
+      const updatedTables = state.diagram.tables.map((table) =>
+        table.id === tableId ? { ...table, x, y } : table
+      );
 
       return {
-        id: table.name,
-        x: offsetX + col * spacing,
-        y: offsetY + row * spacing,
+        diagram: {
+          ...state.diagram,
+          tables: updatedTables,
+        },
       };
     });
-
-    set({ tablePositions: positions });
   },
 
   // Selection
@@ -122,15 +87,15 @@ export const useERDiagramStore = create<ERDiagramState>((set, get) => ({
   // Helpers
   getTableById: (tableId) => {
     const state = get();
-    return state.dbmlDiagram?.tables.find((t) => t.name === tableId);
+    return state.diagram?.tables.find((t) => t.id === tableId);
   },
 
   getRelationshipsForTable: (tableId) => {
     const state = get();
-    if (!state.dbmlDiagram) return [];
+    if (!state.diagram) return [];
 
-    return state.dbmlDiagram.relationships.filter(
-      (r) => r.from.table === tableId || r.to.table === tableId
+    return state.diagram.relationships.filter(
+      (r) => r.sourceTableId === tableId || r.targetTableId === tableId
     );
   },
 }));
